@@ -1,4 +1,21 @@
-# electron-test2
+# Electron Test
+
+## Project Creation
+```
+vue create <project_name>
+```
+
+### Check for updates and do update
+```
+yarn outdated
+yarn upgrade-interactive
+```
+
+### Add Electron
+```
+vue add electron-builder
+yarn add -D @types/electron-devtools-installer
+```
 
 ## Project setup
 ```
