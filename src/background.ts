@@ -3,6 +3,7 @@
 import {app, BrowserWindow, protocol} from 'electron'
 import {createProtocol} from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, {VUEJS_DEVTOOLS} from 'electron-devtools-installer'
+import {createBrowserWindow} from '@/backend/helper'
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
@@ -13,22 +14,17 @@ let win: BrowserWindow | null
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([{scheme: 'app', privileges: {secure: true, standard: true}}])
 
-async function createWindow() {
+async function initialize() {
   // Create the browser window.
-  win = new BrowserWindow({
-    width: 800,
-    height: 600,
-    webPreferences: {
-      // Use pluginOptions.nodeIntegration, leave this alone
-      // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
-      nodeIntegration: (process.env.ELECTRON_NODE_INTEGRATION as unknown) as boolean,
-    },
-  })
+  win = await createBrowserWindow({width: 800, height: 600}, true)
+  if (win == null) {
+    console.error('Window initialization failed')
+    return
+  }
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
     await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL as string)
-    if (!process.env.IS_TEST) win.webContents.openDevTools()
   } else {
     createProtocol('app')
     // Load the index.html when not in development
@@ -53,7 +49,7 @@ app.on('activate', async () => {
   // On macOS it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (win === null) {
-    await createWindow()
+    await initialize()
   }
 })
 
@@ -69,7 +65,7 @@ app.on('ready', async () => {
       console.error('Vue Devtools failed to install:', e.toString())
     }
   }
-  await createWindow()
+  await initialize()
 })
 
 // Exit cleanly on request from parent process in development mode.
